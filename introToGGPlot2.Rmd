@@ -1,0 +1,303 @@
+---
+title: "Getting started with GGPlot2"
+author: "Christophe Ladroue"
+date: "EdinbR 18/03/2015"
+output:
+  ioslides_presentation:
+    fig_height: 3
+    fig_width: 5
+    incremental: no
+    self_contained: yes
+    transition: 0.2
+---
+```{r, echo=FALSE, message=FALSE}
+library(ggplot2)
+```
+
+## Why learn GGPlot2?
+
+- Prettier plots
+- A systematic way of manipulating data, esp. when combined with `dplyr`. Better than relying on a collection of recipes.
+
+## GGplot2:
+
+- GG stands for Grammar of Graphics (Wilkinson, 2005).
+- Provides a unified, statistically-oriented approach to graphical representation.
+- Does so thanks to the use of more abstract objects than just raw graphical elements.
+
+
+## Using `ggplot2`
+`ggplot2` offers at least three ways for producing plots, varying in verbosity:
+
+- `qplot`
+- `ggplot+geom_xxx`
+- `ggplot+layer` 
+
+Today, we'll focus on `ggplot+geom` because it's verbose enough to make the workings of `ggplot2` transparent and readable.
+
+## A first example 1/2
+
+- Dataset to use: `diamonds`. `?diamonds` gives a short description of the data.
+- We'll use a subset of the whole dataset:
+```{r, echo=TRUE}
+    set.seed(42)
+    small <- diamonds[sample(nrow(diamonds),1000),] 
+```
+- A quick peek at the data:
+```{r, echo=FALSE}
+head(small)
+```
+
+## A first example 2/2
+
+A first look at the relation between `carat` and `price`:
+
+```{r, echo=TRUE, fig.align='center'}
+ggplot(small) + 
+  geom_point(aes(x=carat,y=price,colour=cut)) +
+    scale_y_log10() + 
+			facet_wrap(~cut) +
+				ggtitle("First example")
+```
+
+
+## Let's decompose the `ggplot2` command. 
+### Data
+Create the ggplot object and populate it with data (always a data frame)
+```{r, eval=FALSE}
+ggplot(small)
+```
+
+### Layers
+Add layer(s)
+```{r, eval=FALSE}
+geom_point(aes(x=carat,y=price,colour=cut))
+```
+## Let's decompose the `ggplot2` command. 
+### [facets]
+Used for conditionning on variable(s)
+```{r, eval=FALSE}
+facet_wrap(~cut)
+```
+
+### [scales]
+Scales for dimensions, colour palettes etc.
+```{r, eval=FALSE}
+scale_y_log10()
+```
+
+### [more options]
+```{r, eval=FALSE}
+ggtitle("First example")
+```
+
+## Mapping aesthetics {.smaller }
+All `geom_xxx()` require some *aesthetics*. `?geom_point`
+<PRE style="">
+> (...)
+> Aesthetics
+> The following aesthetics can be used with geom_point. Aesthetics are mapped 
+> to variables in the data with the aes function: geom_point(aes(x = var))
+> x: x position (required)
+> y: y position (required)
+> shape: shape of point
+> colour: border colour
+> size: size
+> fill: internal colour
+> alpha: transparency
+</PRE>
+
+
+Thus:
+```{r, eval=FALSE}
+ggplot(small)+geom_point(aes(x=carat,y=price,colour=cut))
+```
+
+also possible:
+```{r, eval=FALSE}
+ggplot(small,aes(x=carat,y=price,colour=cut))+geom_point()
+```
+
+```{r, eval=FALSE}
+ggplot(small,aes(x=carat,y=price))+geom_point(aes(colour=cut))
+```
+
+
+## A subtlety to be aware of {.smaller}
+
+Caveat: there is a difference between *setting* and *assigning* aesthetics.
+
+```{r, echo=TRUE}
+p <- ggplot(small)
+```
+
+**Assigning**
+(or mapping) is done through `aes`.
+```{r, echo=TRUE, fig.align='center'}
+p + geom_point(aes(x = carat, y = price, colour = cut))
+```
+
+## A subtlety to be aware of {.smaller}
+
+Caveat: there is a difference between *setting* and *assigning* aesthetics.
+
+**Assigning**:  Done through `aes`.
+```{r,eval=FALSE}
+p + geom_point(aes(x = carat, y = price, colour = cut))
+```
+
+**Setting**: Fixes a parameter to a certain value and is done *outside* `aes`
+```{r, echo=TRUE, fig.align='center'}
+p + geom_point( aes( x  = carat, y = price), colour = "blue")
+```
+
+## A subtlety to be aware of {.smaller}
+
+Caveat: there is a difference between *setting* and *assigning* aesthetics.
+
+### Don't mix
+But trying to set an aesthetics in `aes` produces unwanted results:
+```{r, echo=TRUE, fig.align='center'}
+p + geom_point( aes( x = carat, y = price, colour = "blue"))
+```
+
+
+## Faceting {.smaller}
+`facet_xxx` are used for conditionning plots on 1 or 2 variables.
+
+```{r, echo=TRUE, fig.align='center'}
+p + geom_point(aes(x=carat,y=price))+facet_wrap(~cut)
+```
+```{r, eval=FALSE}
+p+geom_point(aes(x=carat,y=price))+facet_wrap(~cut,nrow=1)
+```
+```{r, eval=FALSE}
+p+geom_point(aes(x=carat,y=price))+facet_grid(cut~color)
+```
+
+## Faceting {.smaller}
+`facet_xxx` are used for conditionning plots on 1 or 2 variables.
+
+```{r, eval=FALSE}
+p + geom_point(aes(x=carat,y=price))+facet_wrap(~cut)
+```
+```{r, echo=TRUE, fig.align='center'}
+p+geom_point(aes(x=carat,y=price))+facet_wrap(~cut,nrow=1)
+```
+```{r, eval=FALSE}
+p+geom_point(aes(x=carat,y=price))+facet_grid(cut~color)
+```
+
+## Faceting {.smaller}
+`facet_xxx` are used for conditionning plots on 1 or 2 variables.
+
+```{r, eval=FALSE}
+p + geom_point(aes(x=carat,y=price))+facet_wrap(~cut)
+```
+```{r, eval=FALSE}
+p+geom_point(aes(x=carat,y=price))+facet_wrap(~cut,nrow=1)
+```
+```{r, echo=TRUE, fig.align='center'}
+p+geom_point(aes(x=carat,y=price))+facet_grid(cut~color)
+```
+
+
+## Fitting models with `geom_smooth`
+`geom_smooth` is useful for displaying a trend in the data.
+
+```{r, echo=TRUE}
+p <- ggplot(small,aes(x = carat, y = price)) + geom_point()
+```
+
+By default, `geom_smooth` uses loess (akin to splines), or gam (generalised additive models) for larger datasets.
+```{r, echo=TRUE, message=FALSE, fig.align='center'}
+p  + geom_smooth() + facet_wrap( ~ cut)
+```
+
+## Fitting models with `geom_smooth`
+You can also specify a function to use:
+```{r, echo=TRUE, message=FALSE, fig.align='center'}
+p  + geom_smooth( method = "lm") + facet_wrap( ~ cut)
+```
+
+## Putting everything together {.smaller}
+Linear relation between `carat` and `price`, for each type of `cut`, on a log-log scale:
+
+```{r, echo=TRUE, fig.align='center', message=FALSE}
+ggplot(diamonds, aes( x = carat, y = price, colour = cut)) + 
+  scale_x_log10() + scale_y_log10() + 
+    geom_point( alpha = 0.3) + 
+      geom_smooth(method = "lm", colour = 'black') + 
+        facet_wrap( ~ cut)
+```
+
+## Many other geoms available
+They all work on the same principle: mapping/setting aesthetics.
+<PRE>
+geom_abline  	    geom_jitter
+geom_area		    geom_line
+geom_bar		    geom_linerange 
+geom_bin2d		    geom_path 
+geom_blank		    geom_point 
+geom_boxplot		geom_pointrange 
+geom_contour		geom_polygon 
+geom_crossbar		geom_quantile 
+geom_density		geom_rect 
+geom_density2d	    geom_ribbon
+geom_errorbar		geom_rug 
+geom_errorbarh	    geom_segment 
+geom_freqpoly		geom_smooth 
+geom_hex		    geom_step 
+geom_histogram	    geom_text 
+geom_hline		    geom_tile
+geom_vline  	    etc.
+</PRE>
+
+
+## A couple of tricks 
+- Ordering elements
+- Using `aes` programmatically
+
+## Ordering elements {.smaller} 
+`wikipedia` contains the number of articles in the top 6 contributing languages. We use a bar plot to compare them. 
+```{r,echo=TRUE, fig.align='center'}
+wikipedia <- data.frame(
+  language = c( "English", "Swedish", "German", "Dutch", "French", "Waray-Waray"), 
+  articles = c(   4743614,  1959101,   1824951, 1814795,  1600497,       1259079))
+
+ggplot(wikipedia) + 
+  geom_bar(aes(x=language, y=articles), fill="#67a9cf", colour="black", stat="identity")
+```
+
+## Ordering elements {.smaller} 
+`wikipedia` contains the number of articles in the top 6 contributing languages. We use a bar plot to compare them. 
+
+```{r, echo=TRUE, fig.align='center'}
+wikipedia$language <- reorder(wikipedia$language, -wikipedia$articles)
+
+ggplot(wikipedia) + 
+  geom_bar(aes(x=language, y=articles), fill="#67a9cf", colour="black", stat="identity")
+```
+
+
+## Using `aes` programmatically {.smaller} 
+```{r, echo=TRUE, fig.align='center', fig.height=2}
+variable1 <- 'carat'; variable2 <- 'price'
+ggplot(small) + geom_point(aes(x = variable1, y = variable2))
+```
+
+```{r, echo=TRUE, fig.align='center', fig.height=2}
+ggplot(small) + geom_point(aes_string(x = variable1, y = variable2))
+```
+
+
+
+## Good and free resources for ggplot2
+- GGplot2 is vast. Not mentioned here: stats, saving as png,pdf etc., scales, themes, geographical maps etc.
+- Hadley Wickham's *new* book: [https://github.com/hadley/ggplot2-book](https://github.com/hadley/ggplot2-book) 
+- GGplot2 dedicated website: [http://docs.ggplot2.org/current/](http://docs.ggplot2.org/current/)
+- Many tutorials on the web, for example: [http://r-bloggers.com/tag/ggplot2](http://r-bloggers.com/tag/ggplot2)
+- R cookbook: [http://www.cookbook-r.com](http://www.cookbook-r.com) (*e.g.* multiple plots in one figure)
+- Recent 1 hour video intro to ggplot2: [https://github.com/Myfanwy/ggplot2Intro](https://github.com/Myfanwy/ggplot2Intro)
+- For data manipulation in particular: `dplyr`
+
